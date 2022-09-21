@@ -1,0 +1,207 @@
+---
+openapi: 3.0.3
+info:
+  title: ytem In-Store Tracking
+  description: Capture shoppers' behavior by tracking their interactions with items
+    when they are inside stores
+  contact:
+    name: Contact the developer
+    email: support@developer.mojix.com
+  version: v1
+security:
+- Basic Authentication: []
+- apiKey: []
+- token: []
+- clientId: []
+tags:
+- name: Fitting Rooms
+  description: Information about fitting rooms in stores
+- name: Items in Fitting Room
+  description: Items detected in fitting rooms
+paths:
+  /in-store-tracking/fitting-rooms:
+    get:
+      tags:
+      - Fitting Rooms
+      summary: List fitting rooms in a store.
+      operationId: "1"
+      parameters:
+      - name: expand
+        in: query
+        description: "Additional fitting room metadata to include in response, it\
+          \ can be the connection status, bizlocation or position"
+        schema:
+          enum:
+          - status
+          - bizlocation
+          - position
+      - name: location
+        in: query
+        description: "The name of a location or specific bizLocation urn of a premise,\
+          \ floor, area or zone"
+        schema:
+          type: string
+      - name: Accept-version
+        in: header
+        description: "Available value: v1"
+        required: true
+        schema:
+          default: v1
+          type: string
+      responses:
+        "401":
+          description: Authentication error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "200":
+          description: Fitting Rooms found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultFittingRooms'
+  /in-store-tracking/fitting-rooms/{id}:
+    get:
+      tags:
+      - Fitting Rooms
+      summary: Specific fitting room information.
+      parameters:
+      - name: id
+        in: path
+        description: Name or identifier of a fitting room
+        required: true
+        schema:
+          type: string
+      - name: Accept-version
+        in: header
+        description: "Available value: v1"
+        schema:
+          default: v1
+          type: string
+      responses:
+        "400":
+          description: Invalid Fitting Room identifier supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "404":
+          description: Fitting Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "200":
+          description: Fitting Room found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FittingRoom'
+  /in-store-tracking/fitting-rooms/{id}/items:
+    get:
+      tags:
+      - Items in Fitting Room
+      summary: Items currently detected inside a specific fitting room.
+      parameters:
+      - name: id
+        in: path
+        description: Name or identifier of a fitting room
+        required: true
+        schema:
+          type: string
+      - name: Accept-version
+        in: header
+        description: "Available value: v1"
+        schema:
+          default: v1
+          type: string
+      responses:
+        "400":
+          description: Invalid Fitting Room identifier supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "404":
+          description: Fitting Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        "200":
+          description: Fitting Room found
+components:
+  schemas:
+    ErrorMessage:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    Position:
+      type: object
+      properties:
+        x:
+          format: float
+          type: number
+        y:
+          format: float
+          type: number
+        z:
+          format: float
+          type: number
+    FittingRoom:
+      type: object
+      properties:
+        expirationThreshold:
+          format: int32
+          type: integer
+        href:
+          type: string
+        location:
+          type: string
+        name:
+          type: string
+        position:
+          $ref: '#/components/schemas/Position'
+        siteBizLocation:
+          type: string
+        siteCode:
+          type: string
+        status:
+          type: string
+    ResultFittingRooms:
+      type: object
+      properties:
+        fittingRoomList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FittingRoom'
+        location:
+          type: string
+  securitySchemes:
+    Basic Authentication:
+      type: http
+      in: header
+      scheme: basic
+    apiKey:
+      type: apiKey
+      description: <b>apikey or api_key</b>
+      name: apiKey
+      in: header
+    token:
+      type: apiKey
+      name: token
+      in: header
+    clientId:
+      type: apiKey
+      name: clientId
+      in: header
